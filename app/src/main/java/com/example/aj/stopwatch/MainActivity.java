@@ -1,12 +1,15 @@
 package com.example.aj.stopwatch;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.util.Vector;
 
 // implement: button when held down will display current WorkTime (in real time)
 // implement: another activity to use graphView to display stored worktimes
@@ -21,6 +24,9 @@ public class MainActivity extends Activity {
     private long PauseTimer;
     private float WorkTime; // this will be the time displayed and saved in storage
     private static int Counter;     // used to determine if click is start or pause
+    private static int WTcount;  // show which WT the value is associated with in sharePref
+    public static String filename = "WorkTimeData"; // filename for shared data file
+    SharedPreferences SharedWorkTime; //SharedPreference variable for WorkTime data file
     /********************************************************************************/
 
 
@@ -43,7 +49,11 @@ public class MainActivity extends Activity {
             CLICK_button.setText("Start!");
             // set WorkTime as minute with float point (double)
             setWorkTime();
+            writeWorkTimeToFileSharedPref();
             displayWorkTime();
+            if(Counter==11){
+                displaySharedWorkTime();
+            }
             Counter++;
         }
 
@@ -58,18 +68,52 @@ public class MainActivity extends Activity {
         WorkTime = tempWT; // set WorkTime and convert to minutes
     }
     /** Get WorkTime value if needed by other class**/
-    public double getWorkTime(){
+    public float getWorkTime(){
         return (WorkTime);
     }
 
+    /** Display worktime to mainactivity screen**/
     public void displayWorkTime(){
         TextView textView = (TextView) findViewById(R.id.DISPLAYworkTime);
         textView.setText("You just worked for " + getWorkTime() + " minutes!");
     }
+
+    /** Display the shared preference file for WorkTime values**/
+    public void displaySharedWorkTime(){
+        float tempWTsharedPref = 0;
+        TextView myTextView = (TextView) findViewById(R.id.DISPLAYsharedWorkTime);
+        int tmpCount = 0;
+        SharedWorkTime = getSharedPreferences(filename, MODE_PRIVATE);
+
+        do {
+            tmpCount++;
+            tempWTsharedPref = SharedWorkTime.getFloat("WT:"+tmpCount, -1);
+            myTextView.append(""+tempWTsharedPref);
+            myTextView.append("\n");
+        }while(tempWTsharedPref != -1); //
+
+    }
+
+    /** Write workTIme to internal storage using SharedPreference Key-Value Pair**/
+    public void writeWorkTimeToFileSharedPref(){
+        WTcount++;
+        // make editor object so we can edit our SharedWorkTime file
+        SharedPreferences.Editor editor = SharedWorkTime.edit();
+        editor.putFloat("WT:" + WTcount, getWorkTime());
+        editor.commit();
+
+    }
+
+    ///******************************************************************************// Lifecycle methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Initializaions:
+        SharedWorkTime = getSharedPreferences(filename, MODE_PRIVATE);
+        Counter = 0;
+        WTcount = 0;
     }
 
 

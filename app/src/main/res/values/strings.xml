@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Stop Watch</string>
+    <string name="title">Click Button to Get Productive</string>
+    <string name="action_settings">Settings</string>
+    <string name="click_button">Click!</string>
+
+
+</resources>
