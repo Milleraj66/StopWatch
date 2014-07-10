@@ -5,6 +5,9 @@
     <string name="title">Click Button to Get Productive</string>
     <string name="action_settings">Settings</string>
     <string name="click_button">Click!</string>
-
+    <string name="action_graphView">Charts</string>
+    <string name="title_activity_graph_view">GraphViewActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_splash">SplashActivity</string>
 
 </resources>
