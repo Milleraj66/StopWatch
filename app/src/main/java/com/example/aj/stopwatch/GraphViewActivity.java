@@ -21,22 +21,17 @@ public class GraphViewActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph_view);
 
+        // init example series data
         GraphViewSeries exampleSeries = new GraphViewSeries(new GraphViewData[] {
-                new GraphViewData(1, 40)
-                , new GraphViewData(2, 12)
-                , new GraphViewData(3, 7)
-                , new GraphViewData(2, 8)
-                , new GraphViewData(2, 10)
-                , new GraphViewData(3, 26)
-                , new GraphViewData(1, 37)
-                , new GraphViewData(1, 53)
-                , new GraphViewData(3, 253)
-
+                new GraphViewData(1, 2.0d)
+                , new GraphViewData(2, 1.5d)
+                , new GraphViewData(3, 2.5d)
+                , new GraphViewData(4, 1.0d)
         });
 
         GraphView graphView = new LineGraphView(
                 this // context
-                , "Job Status Graph" // heading
+                , "GraphViewDemo" // heading
         );
         graphView.addSeries(exampleSeries); // data
 
