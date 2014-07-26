@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.TextView;
 
 import java.util.Vector;
@@ -28,6 +30,7 @@ public class MainActivity extends Activity {
     private static int WTcount;  // show which WT the value is associated with in sharePref
     public static String filename = "WorkTimeData"; // filename for shared data file
     SharedPreferences SharedWorkTime; //SharedPreference variable for WorkTime data file
+    private Chronometer mChrono;
     /********************************************************************************/
 
 
@@ -37,6 +40,9 @@ public class MainActivity extends Activity {
         // if counter is even -> clickButton is a StartTimer
         if(Counter%2 == 0){
             StartTimer = System.currentTimeMillis(); // in mSec (no float point)
+            // set base time for chronometer, Should reset every worktime
+            mChrono.setBase(SystemClock.elapsedRealtime());
+            mChrono.start();
             // Set text in button to Pause!
             Button CLICK_button = (Button)findViewById(R.id.CLICKbotton);
             CLICK_button.setText("Pause!");
@@ -45,6 +51,7 @@ public class MainActivity extends Activity {
         // if counter is odd -> clickButton is PauseTimer -> we have a WorkTime
         else{
             PauseTimer = System.currentTimeMillis(); // in mSec (no float point)
+            mChrono.stop();
             // Set text in button to Pause!
             Button CLICK_button = (Button)findViewById(R.id.CLICKbotton);
             CLICK_button.setText("Start!");
@@ -64,7 +71,7 @@ public class MainActivity extends Activity {
         float tempWT = 0;
         tempWT = (PauseTimer-StartTimer); //msecs
         tempWT = (tempWT/1000); //secs
-        tempWT = (tempWT/60);   //minutes
+        //tempWT = (tempWT/60);   //minutes
 
         WorkTime = tempWT; // set WorkTime and convert to minutes
     }
@@ -76,7 +83,7 @@ public class MainActivity extends Activity {
     /** Display worktime to mainactivity screen**/
     public void displayWorkTime(){
         TextView textView = (TextView) findViewById(R.id.DISPLAYworkTime);
-        textView.setText("You just worked for " + getWorkTime() + " minutes!");
+        textView.setText("You just worked for " + getWorkTime() + " seconds!");
     }
 
     /** Display the shared preference file for WorkTime values**/
@@ -122,6 +129,7 @@ public class MainActivity extends Activity {
         SharedWorkTime = getSharedPreferences(filename, MODE_PRIVATE);
         Counter = 0;
         WTcount = 0;
+        mChrono = (Chronometer) findViewById(R.id.CHRONOMETERactivity);
     }
 
 
