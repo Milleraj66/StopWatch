@@ -1,10 +1,12 @@
 package com.example.aj.stopwatch;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,133 +14,52 @@ import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.TextView;
 
-import java.util.Vector;
-
 // implement: button when held down will display current WorkTime (in real time)
-// implement: another activity to use graphView to display stored worktimes
 // implement: break time
 // implement: alarm to go off after set amount of work time
 // implement: settings activity
 // implement: improve UI.... L?
 
+//FIX:
+// mChronoWorkTime is always displayed one iteration behind
+
+
 public class MainActivity extends Activity {
-    // private class variables
-    private long StartTimer;
-    private long PauseTimer;
-    private float WorkTime; // this will be the time displayed and saved in storage
-    private static int Counter;     // used to determine if click is start or pause
-    private static int WTcount;  // show which WT the value is associated with in sharePref
-    public static String filename = "WorkTimeData"; // filename for shared data file
-    SharedPreferences SharedWorkTime; //SharedPreference variable for WorkTime data file
-    private Chronometer mChrono;
-    /********************************************************************************/
+    /*************************Member Variables******************/
+    private static int mCounter;     // used to determine if click is  tart or pause
 
-
-    /** When button is clicked this method is called
-     *  Will be used to start and stop timer **/
-    public void clickButton(View view){
-        // if counter is even -> clickButton is a StartTimer
-        if(Counter%2 == 0){
-            StartTimer = System.currentTimeMillis(); // in mSec (no float point)
-            // set base time for chronometer, Should reset every worktime
-            mChrono.setBase(SystemClock.elapsedRealtime());
-            mChrono.start();
-            // Set text in button to Pause!
-            Button CLICK_button = (Button)findViewById(R.id.CLICKbotton);
-            CLICK_button.setText("Pause!");
-            Counter++;
-        }
-        // if counter is odd -> clickButton is PauseTimer -> we have a WorkTime
-        else{
-            PauseTimer = System.currentTimeMillis(); // in mSec (no float point)
-            mChrono.stop();
-            // Set text in button to Pause!
-            Button CLICK_button = (Button)findViewById(R.id.CLICKbotton);
-            CLICK_button.setText("Start!");
-            // set WorkTime as minute with float point (double)
-            setWorkTime();
-            writeWorkTimeToFileSharedPref();
-            displayWorkTime();
-            if(Counter==11){
-                displaySharedWorkTime();
-            }
-            Counter++;
-        }
-
-    }
-    /** Sets the current WorkTime value and converts it to minutes**/
-    public void setWorkTime(){
-        float tempWT = 0;
-        tempWT = (PauseTimer-StartTimer); //msecs
-        tempWT = (tempWT/1000); //secs
-        //tempWT = (tempWT/60);   //minutes
-
-        WorkTime = tempWT; // set WorkTime and convert to minutes
-    }
-    /** Get WorkTime value if needed by other class**/
-    public float getWorkTime(){
-        return (WorkTime);
-    }
-
-    /** Display worktime to mainactivity screen**/
-    public void displayWorkTime(){
-        TextView textView = (TextView) findViewById(R.id.DISPLAYworkTime);
-        textView.setText("You just worked for " + getWorkTime() + " seconds!");
-    }
-
-    /** Display the shared preference file for WorkTime values**/
-    public void displaySharedWorkTime(){
-        float tempWTsharedPref = 0;
-        TextView myTextView = (TextView) findViewById(R.id.DISPLAYsharedWorkTime);
-        int tmpCount = 0;
-        SharedWorkTime = getSharedPreferences(filename, MODE_PRIVATE);
-
-        do {
-            tmpCount++;
-            tempWTsharedPref = SharedWorkTime.getFloat("WT:"+tmpCount, -1);
-            myTextView.append(""+tempWTsharedPref);
-            myTextView.append("\n");
-        }while(tempWTsharedPref != -1); //
-
-    }
-
-    /** Write workTIme to internal storage using SharedPreference Key-Value Pair**/
-    public void writeWorkTimeToFileSharedPref(){
-        WTcount++;
-        // make editor object so we can edit our SharedWorkTime file
-        SharedPreferences.Editor editor = SharedWorkTime.edit();
-        editor.putFloat("WT:" + WTcount, getWorkTime());
-        editor.commit();
-
-    }
-
-    /** Create intent to start GraphViewActivity when menu item action_graphView is clicked**/
-    public void startGraphViewActivity(){
-        Intent intent = new Intent(this, GraphViewActivity.class);
-        startActivity(intent);
-    }
-
-    ///******************************************************************************// Lifecycle methods
+    /** START LIFECYLE METHODS **/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
-        //Initializaions:
-        SharedWorkTime = getSharedPreferences(filename, MODE_PRIVATE);
-        Counter = 0;
-        WTcount = 0;
-        mChrono = (Chronometer) findViewById(R.id.CHRONOMETERactivity);
-    }
+        /** Fragment manager in onCreate method **/
+        if (savedInstanceState == null) {
+            // Create new fragment and transaction
+            Fragment newFragment = new ChronoFragment();
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack
+            transaction.add(R.id.CHRONOviewgroup, newFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+        }
+
+        mCounter = 0; // Initialize Counter
+
+    }// end void onCreate(Bundle)
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
-    }
+
+    }// end boolean onCreateOptionsMenu(Menu)
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -146,15 +67,72 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         // Handle presses on the action bar items
+        /** Switch-Case to handel action bar menue item clicks **/
         switch (item.getItemId()) {
             case R.id.action_graphView:
-                startGraphViewActivity();
+                getFragmentManager().beginTransaction()
+                        .add(R.id.GRAPHVIEWviewgroup, new GraphViewFragment())
+                        .commit();
                 return true;
             //case R.id.action_settings:
-                //openSettings();
-                //return true;
+            //openSettings();
+            //return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+
+    }// end boolean onOptionsItemSelected(MenuItem)
+    /** END LIFECYLE METHODS **/
+
+
+    /********************************* Button Method ****************************/
+    public void clickButton(View view){
+        /** if counter is even -> clickButton is a StartTimer **/
+        if(mCounter%2 == 0){
+            // Start the service to do real work
+            startService(new Intent(getBaseContext(), StopWatchService.class));
+
+            // Set text in button to Pause!
+            Button CLICK_button = (Button)findViewById(R.id.CLICKbotton);
+            CLICK_button.setText("Pause!");
+
+            mCounter++;
+        }
+        /** if counter is odd -> clickButton is PauseTimer -> we have a WorkTime **/
+        else{
+            // call the stopService method to do real work
+            stopService(new Intent(getBaseContext(), StopWatchService.class));
+
+            // Set text in button to Pause!
+            Button CLICK_button = (Button)findViewById(R.id.CLICKbotton);
+            CLICK_button.setText("Start!");
+
+            // display chronometer worktime
+            displayWorkTime();
+
+            mCounter++;
+        }
+
     }
+
+
+    // CODE NOT CURRENTLY BEING USED
+
+
+    /** Display worktime to mainactivity screen**/
+    public void displayWorkTime(){
+        TextView textView = (TextView) findViewById(R.id.DISPLAYworkTime);
+        textView.setText("You just worked for " + ChronoFragment.getChronoWorkTime() + " seconds!");
+    }
+
 }
+
+/**** OLD CODE THAT MIGHT BE REUSED ****/
+
+
+/** Create intent to start GraphViewActivity when menu item action_graphView is clicked**/
+     /*
+    public void startGraphViewActivity(){
+        Intent intent = new Intent(this, GraphViewFragment.class);
+        startActivity(intent);
+    }*/

@@ -29,14 +29,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".GraphViewActivity"
+            android:name=".GraphViewFragment"
             android:label="@string/title_activity_graph_view"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.aj.stopwatch.MainActivity" />
         </activity>
-
+        <service android:name=".StopWatchService"/>
     </application>
 
 </manifest>

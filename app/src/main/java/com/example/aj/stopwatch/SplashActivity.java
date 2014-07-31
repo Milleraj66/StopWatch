@@ -10,7 +10,8 @@ import com.example.aj.stopwatch.R;
 import java.util.Timer;
 //** This activity will display our splash logo for 3 seconds and then intent mainActivity***//
 public class SplashActivity extends Activity {
-    private long SplashSleepTime = 3000; // splash screan will display for 3 seconds
+    /*************************Member Variables******************/
+    private long SplashSleepTime = 1000; // splash screen will display for 3 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
